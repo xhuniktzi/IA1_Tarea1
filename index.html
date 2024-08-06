@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Aspiradora Inteligente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: "Courier New", Courier, monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Simulación de Aspiradora Inteligente</h1>
+        <pre>
+<code>
+import time
+import random
+from typing import Dict, List, Tuple
+
+# Diccionario que contiene los posibles estados de la aspiradora
+# La clave es el estado actual de la aspiradora (ubicación y limpieza)
+# El valor es una lista que contiene el número de estado y un contador
+# del número de veces que se ha visitado ese estado.
+Estado = Tuple[str, str, str]
+EstadoInfo = List[int]
+posibles_estados: Dict[Estado, EstadoInfo] = {
+    ('A', 'DIRTY', 'DIRTY'): [1, 0],
+    ('B', 'DIRTY', 'DIRTY'): [2, 0],
+    ('A', 'DIRTY', 'CLEAN'): [3, 0],
+    ('B', 'DIRTY', 'CLEAN'): [4, 0],
+    ('A', 'CLEAN', 'DIRTY'): [5, 0],
+    ('B', 'CLEAN', 'DIRTY'): [6, 0],
+    ('A', 'CLEAN', 'CLEAN'): [7, 0],
+    ('B', 'CLEAN', 'CLEAN'): [8, 0]
+}
+
+def visitado_todos_los_estados() -> bool:
+    """
+    Verifica si todos los estados han sido visitados al menos una vez.
+
+    Returns:
+        bool: True si todos los estados han sido visitados, False en caso contrario.
+    """
+    return all(valores[1] > 0 for valores in posibles_estados.values())
+
+def agente_reflexivo(ubicacion: str, estado: str) -> str:
+    """
+    Define la acción del agente basado en su ubicación y el estado.
+
+    Args:
+        ubicacion (str): La ubicación actual del agente ('A' o 'B').
+        estado (str): El estado actual de la habitación ('DIRTY', 'CLEAN', o 'REPEATED').
+
+    Returns:
+        str: La acción que debe realizar el agente ('CLEAN', 'RIGHT', 'LEFT').
+    """
+    if estado == "DIRTY":
+        return 'CLEAN'
+    elif estado == "REPEATED":
+        return 'DIRTY'
+    elif ubicacion == 'A':
+        return 'RIGHT'
+    elif ubicacion == 'B':
+        return 'LEFT'
+    return ''
+
+def prueba_agente(estados: List[str]) -> None:
+    """
+    Simula la ejecución del agente reflexivo hasta que haya visitado todos los estados.
+
+    Args:
+        estados (List[str]): El estado inicial del sistema [ubicación, estado_A, estado_B].
+    """
+    while True:
+        ubicacion = estados[0]
+        estado_habitacion = estados[1] if ubicacion == 'A' else estados[2]
+        estado_visitado = posibles_estados[tuple(estados)]
+        estado_actual = estado_visitado[0]
+
+        if estado_visitado[1] == 0:
+            posibles_estados[tuple(estados)][1] += 1
+        else:
+            habitacion_a_ensuciar = random.randint(1, 2)
+            estados[habitacion_a_ensuciar] = 'DIRTY'
+            accion = agente_reflexivo(ubicacion, 'REPEATED')
+            print(f"Ubicación: {ubicacion} | Acción: {accion} | Estado actual: {estado_actual}")
+            continue
+
+        accion = agente_reflexivo(ubicacion, estado_habitacion)
+        print(f"Ubicación: {ubicacion} | Acción: {accion} | Estado actual: {estado_actual}")
+
+        if accion == "CLEAN":
+            if ubicacion == 'A':
+                estados[1] = "CLEAN"
+            elif ubicacion == 'B':
+                estados[2] = "CLEAN"
+        elif accion == "RIGHT":
+            estados[0] = 'B'
+        elif accion == "LEFT":
+            estados[0] = 'A'
+
+        if visitado_todos_los_estados():
+            break
+
+        time.sleep(3)
+
+# Asumimos que ambas habitaciones están sucias y que la aspiradora está en la habitación A.
+# Comenzamos en el estado 1.
+prueba_agente(['A', 'DIRTY', 'DIRTY'])
+</code>
+        </pre>
+    </div>
+</body>
+
+</html>
